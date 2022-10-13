@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import discord
+import os
+from dotenv import load_dotenv
+import dbtools
+import btools
+import sys
+from discord.ext import tasks
+import clitools
+
+# Load envirenment variables
+load_dotenv()
+
+# Aliases
+intents = discord.Intents.all()
+#client = discord.Client(intents=intents)
+client = discord.Client()
+
+# Specify the database folder
+database = os.getcwd() + "/database"
+
+
+@client.event
+async def on_ready():
+    print(f'Me has logged in as bot: {client.user}')
+    await client.change_presence(activity=discord.Game('with your Mother'))
+
+
+@client.event
+async def on_message(message):
+    msg = str(message.content)
+    channel = message.channel
+    user = message.author
+    username = str(user).split('#')[0]
+    # Read the bot's logs
+    print(username, '-', channel, ':', msg)
+
+    if msg.lower().startswith(os.getenv('PREFIX')):
+        # Check if there are arguments for the command
+        spacecount = btools.char_counter(msg, ' ')
+        if spacecount == 0:
+            fullcmd = msg
+            arguments = ""
+        else:
+            fullcmd, arguments = msg.split()
+        command = btools.remove_chars(fullcmd, os.getenv('PREFIX'))
+        # Legacy Code
+        # if dbtools.legcommandfinder(command):
+        #    cmdexec = 'cod.' + command
+        #    cmdexec(command, arguments, channel, user, username, client, discord)
+        if dbtools.cmdquery(command, database + '/commands.json'):
+            await btools.command_maker(command, arguments, channel, user, username, client, discord)
+
+
+# Allow talking though the bot
+@tasks.loop(seconds=5)
+async def rc_bot():
+    #guild = client.get_guild(id=guild_id)
+    channel = client.get_channel(channel_id)
+    print('Ready for input!')
+    msg = sys.stdin.read()
+    if msg.lower().startswith('/'):
+        # Check if there are arguments for the command
+        spacecount = btools.char_counter(msg, ' ')
+        if spacecount == 0:
+            fullcmd = msg
+            arguments = ""
+        else:
+            fullcmd, arguments = msg.split()
+        command = btools.remove_chars(fullcmd, '/')
+        msg = clitools.picker(command, arguments)
+    await channel.send(msg)
+
+
+@rc_bot.before_loop
+async def rc_bot_before():
+    #global guild_id
+    #guild_id = int(input('Guild ID> '))
+    global channel_id
+    channel_id = int(input('Channel ID> '))
+    await client.wait_until_ready()
+
+
+rc_bot.start()
+client.run(os.getenv('TOKEN'))

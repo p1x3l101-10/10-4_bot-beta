@@ -1,0 +1,16 @@
+{
+  "cookiejar": [
+    {
+      "cmdfile": "cookiejar.py",
+      "helptext": "Send the gift of cookies to someone! Who doesn't like cookies?",
+      "helpsyntax": "cookiejar <@user|id>"
+    }
+  ],
+  "ping": [
+    {
+      "cmdfile": "ping.py",
+      "helptext": "A test command, mainly so devs can see if the bot truly broke, or if it was just a command.",
+      "helpsyntax": "ping"
+    }
+  ]
+}

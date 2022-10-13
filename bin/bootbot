@@ -1,0 +1,8 @@
+#!/bin/bash
+startbot () {
+	cmd=$(echo 'python3 ./bot-main ')
+	tmux new-session -d -s 'disc-bot' $cmd
+	echo 'Discord bot started on tmux session "disc-bot"'
+}
+cd ..
+startbot
